@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure Web App
+name: Build and Deploy Flask App to Azure
 
 on:
   push:
@@ -6,33 +6,33 @@ on:
       - main
 
 jobs:
-  build-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout your repo
-      - name: Checkout source code
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # Step 2: Login to Azure
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 3: Login to your ACR
-      - name: Log in to Azure Container Registry
-        run: az acr login --name BritEdgeRegistryJW
+    - name: Log in to Azure Container Registry
+      run: |
+        az acr login --name BritEdgeRegistryJW
 
-      # Step 4: Build and push Docker image to ACR
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t BritEdgeRegistryJW.azurecr.io/britedge-app:latest .
-          docker push BritEdgeRegistryJW.azurecr.io/britedge-app:latest
+    - name: Build Docker Image
+      run: |
+        docker build -t britedgeregistryjw.azurecr.io/britedge-app:latest .
 
-      # Step 5: Deploy image to Azure Web App
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: britedge-web
-          images: BritEdgeRegistryJW.azurecr.io/britedge-app:latest
+    - name: Push Docker Image to ACR
+      run: |
+        docker push britedgeregistryjw.azurecr.io/britedge-app:latest
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: britedge-flask-app
+        images: britedgeregistryjw.azurecr.io/britedge-app:latest
+
